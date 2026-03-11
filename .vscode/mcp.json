@@ -1,0 +1,13 @@
+{
+	"servers": {
+		"godot-mcp-server-dba44690": {
+			"type": "stdio",
+			"command": "node",
+			"args": [
+				"--experimental-modules",
+				"C:\\Users\\thied\\code\\godot-mcp\\server\\dist\\index.js"
+			]
+		}
+	},
+	"inputs": []
+}
