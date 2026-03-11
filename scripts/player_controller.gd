@@ -17,7 +17,7 @@ func _ready() -> void:
 	_ensure_camera()
 
 func _physics_process(delta: float) -> void:
-	var turn_input := Input.get_action_strength("turn_right") - Input.get_action_strength("turn_left")
+	var turn_input := Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
 	rotate_y(turn_input * turn_speed * delta)
 
 	var forward_input := Input.get_action_strength("move_forward")
