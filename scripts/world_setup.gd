@@ -7,14 +7,12 @@ const WALL_THICKNESS := 2.0
 const STRIPE_SIZE := 16.0
 const GRID_LINE_THICKNESS := 0.35
 const GRID_SPACING := 10.0
+# North, South, East, West
 const WALL_COLORS := [
 	Color(0.95, 0.18, 0.18, 1.0),
 	Color(0.96, 0.48, 0.14, 1.0),
 	Color(0.96, 0.84, 0.16, 1.0),
-	Color(0.24, 0.78, 0.28, 1.0),
-	Color(0.18, 0.56, 0.96, 1.0),
-	Color(0.34, 0.32, 0.90, 1.0),
-	Color(0.78, 0.22, 0.82, 1.0)
+	Color(0.24, 0.78, 0.28, 1.0)
 ]
 
 var _material_cache := {}
@@ -135,12 +133,12 @@ func _ensure_walls() -> void:
 	if has_node("NorthWall"):
 		return
 
-	_create_rainbow_wall("NorthWall", Vector3(0.0, WALL_HEIGHT * 0.5, -ARENA_HALF_EXTENT), ARENA_HALF_EXTENT * 2.2, true)
-	_create_rainbow_wall("SouthWall", Vector3(0.0, WALL_HEIGHT * 0.5, ARENA_HALF_EXTENT), ARENA_HALF_EXTENT * 2.2, true)
-	_create_rainbow_wall("EastWall", Vector3(ARENA_HALF_EXTENT, WALL_HEIGHT * 0.5, 0.0), ARENA_HALF_EXTENT * 2.2, false)
-	_create_rainbow_wall("WestWall", Vector3(-ARENA_HALF_EXTENT, WALL_HEIGHT * 0.5, 0.0), ARENA_HALF_EXTENT * 2.2, false)
+	_create_rainbow_wall("NorthWall", Vector3(0.0, WALL_HEIGHT * 0.5, -ARENA_HALF_EXTENT), ARENA_HALF_EXTENT * 2.2, true, 0)
+	_create_rainbow_wall("SouthWall", Vector3(0.0, WALL_HEIGHT * 0.5, ARENA_HALF_EXTENT), ARENA_HALF_EXTENT * 2.2, true, 1)
+	_create_rainbow_wall("EastWall", Vector3(ARENA_HALF_EXTENT, WALL_HEIGHT * 0.5, 0.0), ARENA_HALF_EXTENT * 2.2, false, 2)
+	_create_rainbow_wall("WestWall", Vector3(-ARENA_HALF_EXTENT, WALL_HEIGHT * 0.5, 0.0), ARENA_HALF_EXTENT * 2.2, false, 3)
 
-func _create_rainbow_wall(wall_name: String, wall_position: Vector3, wall_length: float, along_x: bool) -> void:
+func _create_rainbow_wall(wall_name: String, wall_position: Vector3, wall_length: float, along_x: bool, color_index: int) -> void:
 	var wall := StaticBody3D.new()
 	wall.name = wall_name
 	wall.position = wall_position
@@ -153,22 +151,15 @@ func _create_rainbow_wall(wall_name: String, wall_position: Vector3, wall_length
 	collision.shape = wall_shape
 	wall.add_child(collision)
 
-	var stripe_count := int(ceil(wall_length / STRIPE_SIZE))
-	for stripe_index in stripe_count:
-		var stripe := MeshInstance3D.new()
-		stripe.name = "Stripe_%02d" % stripe_index
+	var visual := MeshInstance3D.new()
+	visual.name = "Visual"
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(wall_length, WALL_HEIGHT, WALL_THICKNESS) if along_x else Vector3(WALL_THICKNESS, WALL_HEIGHT, wall_length)
+	visual.mesh = mesh
 
-		var stripe_mesh := BoxMesh.new()
-		var segment_length := wall_length / float(stripe_count)
-		stripe_mesh.size = Vector3(segment_length + 0.2, WALL_HEIGHT, WALL_THICKNESS * 0.75) if along_x else Vector3(WALL_THICKNESS * 0.75, WALL_HEIGHT, segment_length + 0.2)
-		stripe.mesh = stripe_mesh
-
-		var offset := -wall_length * 0.5 + segment_length * (stripe_index + 0.5)
-		stripe.position = Vector3(offset, 0.0, 0.0) if along_x else Vector3(0.0, 0.0, offset)
-
-		var stripe_color = WALL_COLORS[stripe_index % WALL_COLORS.size()]
-		stripe.material_override = _get_material(stripe_color)
-		wall.add_child(stripe)
+	var wall_color = WALL_COLORS[color_index % WALL_COLORS.size()]
+	visual.material_override = _get_material(wall_color)
+	wall.add_child(visual)
 
 func _ensure_player_spawn() -> void:
 	var player := get_node_or_null("Player") as CharacterBody3D
