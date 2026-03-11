@@ -2,9 +2,9 @@ extends CharacterBody3D
 
 @export var walk_speed := 8.0
 @export var reverse_speed := 4.5
-@export var sprint_max_speed := 48.0
+@export var sprint_max_speed := 256.0
 @export var speed_change_rate := 10.0
-@export var reverse_deceleration_rate := 20.0
+@export var reverse_deceleration_rate := 60.0
 @export var turn_speed := 2.5
 @export var gravity_scale := 1.0
 
