@@ -1,6 +1,6 @@
 {
 	"servers": {
-		"godot-mcp-server-dba44690": {
+		"godot-mcp-server-dba72948": {
 			"type": "stdio",
 			"command": "node",
 			"args": [
