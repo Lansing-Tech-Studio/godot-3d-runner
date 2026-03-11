@@ -17,12 +17,34 @@ const WALL_COLORS := [
 	Color(0.78, 0.22, 0.82, 1.0)
 ]
 
+var _material_cache := {}
+
 func _ready() -> void:
 	_ensure_environment()
 	_ensure_floor()
 	_ensure_floor_markers()
 	_ensure_walls()
 	_ensure_player_spawn()
+
+func _get_material(color: Color) -> StandardMaterial3D:
+	var key = color.to_html()
+	if not _material_cache.has(key):
+		var material := StandardMaterial3D.new()
+		material.albedo_color = color
+		material.roughness = 0.8
+		material.metallic = 0.0
+		_material_cache[key] = material
+	return _material_cache[key]
+
+func _get_grid_material(is_major: bool) -> StandardMaterial3D:
+	var key = "grid_" + ("major" if is_major else "minor")
+	if not _material_cache.has(key):
+		var material := StandardMaterial3D.new()
+		material.albedo_color = Color(0.78, 0.82, 0.88, 1.0) if is_major else Color(0.32, 0.35, 0.4, 1.0)
+		material.roughness = 1.0
+		material.metallic = 0.0
+		_material_cache[key] = material
+	return _material_cache[key]
 
 func _ensure_environment() -> void:
 	if not has_node("Sun"):
@@ -93,10 +115,12 @@ func _ensure_floor_markers() -> void:
 	var line_count := int((ARENA_HALF_EXTENT * 2.0) / GRID_SPACING)
 	for index in range(line_count + 1):
 		var offset := -ARENA_HALF_EXTENT + index * GRID_SPACING
-		_create_floor_line(markers, Vector3(offset, 0.03, 0.0), Vector3(GRID_LINE_THICKNESS, 0.06, ARENA_HALF_EXTENT * 2.0), _grid_color(index))
-		_create_floor_line(markers, Vector3(0.0, 0.03, offset), Vector3(ARENA_HALF_EXTENT * 2.0, 0.06, GRID_LINE_THICKNESS), _grid_color(index + 1))
+		var is_major = (index % 5 == 0)
 
-func _create_floor_line(parent: Node3D, line_position: Vector3, line_size: Vector3, color: Color) -> void:
+		_create_floor_line(markers, Vector3(offset, 0.03, 0.0), Vector3(GRID_LINE_THICKNESS, 0.06, ARENA_HALF_EXTENT * 2.0), is_major)
+		_create_floor_line(markers, Vector3(0.0, 0.03, offset), Vector3(ARENA_HALF_EXTENT * 2.0, 0.06, GRID_LINE_THICKNESS), is_major)
+
+func _create_floor_line(parent: Node3D, line_position: Vector3, line_size: Vector3, is_major: bool) -> void:
 	var line := MeshInstance3D.new()
 	line.position = line_position
 
@@ -104,16 +128,8 @@ func _create_floor_line(parent: Node3D, line_position: Vector3, line_size: Vecto
 	mesh.size = line_size
 	line.mesh = mesh
 
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
-	material.roughness = 1.0
-	line.material_override = material
+	line.material_override = _get_grid_material(is_major)
 	parent.add_child(line)
-
-func _grid_color(index: int) -> Color:
-	if index % 5 == 0:
-		return Color(0.78, 0.82, 0.88, 1.0)
-	return Color(0.32, 0.35, 0.4, 1.0)
 
 func _ensure_walls() -> void:
 	if has_node("NorthWall"):
@@ -150,10 +166,8 @@ func _create_rainbow_wall(wall_name: String, wall_position: Vector3, wall_length
 		var offset := -wall_length * 0.5 + segment_length * (stripe_index + 0.5)
 		stripe.position = Vector3(offset, 0.0, 0.0) if along_x else Vector3(0.0, 0.0, offset)
 
-		var material := StandardMaterial3D.new()
-		material.albedo_color = WALL_COLORS[stripe_index % WALL_COLORS.size()]
-		material.roughness = 0.8
-		stripe.material_override = material
+		var stripe_color = WALL_COLORS[stripe_index % WALL_COLORS.size()]
+		stripe.material_override = _get_material(stripe_color)
 		wall.add_child(stripe)
 
 func _ensure_player_spawn() -> void:
