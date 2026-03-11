@@ -57,17 +57,17 @@ func _ensure_floor() -> void:
 	if has_node("Floor"):
 		return
 
-	var floor := StaticBody3D.new()
-	floor.name = "Floor"
-	floor.position = Vector3(0.0, -FLOOR_HEIGHT * 0.5, 0.0)
-	add_child(floor)
+	var floor_body := StaticBody3D.new()
+	floor_body.name = "Floor"
+	floor_body.position = Vector3(0.0, -FLOOR_HEIGHT * 0.5, 0.0)
+	add_child(floor_body)
 
 	var collision := CollisionShape3D.new()
 	collision.name = "CollisionShape3D"
 	var collision_shape := BoxShape3D.new()
 	collision_shape.size = Vector3(ARENA_HALF_EXTENT * 2.2, FLOOR_HEIGHT, ARENA_HALF_EXTENT * 2.2)
 	collision.shape = collision_shape
-	floor.add_child(collision)
+	floor_body.add_child(collision)
 
 	var visual := MeshInstance3D.new()
 	visual.name = "Visual"
@@ -80,7 +80,7 @@ func _ensure_floor() -> void:
 	material.roughness = 0.95
 	material.metallic = 0.0
 	visual.material_override = material
-	floor.add_child(visual)
+	floor_body.add_child(visual)
 
 func _ensure_floor_markers() -> void:
 	if has_node("FloorMarkers"):
