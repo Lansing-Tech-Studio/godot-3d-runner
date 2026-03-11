@@ -1,0 +1,10 @@
+[gd_scene format=3 uid="uid://dekx4f6l7kuey"]
+
+[ext_resource type="Script" uid="uid://bhkcq6pe3h4hx" path="res://scripts/world_setup.gd" id="1_0wfyh"]
+[ext_resource type="Script" uid="uid://dcvq8brqa223t" path="res://scripts/player_controller.gd" id="2_sugp2"]
+
+[node name="main" type="Node3D" unique_id=995081584]
+script = ExtResource("1_0wfyh")
+
+[node name="Player" type="CharacterBody3D" parent="." unique_id=1665987412]
+script = ExtResource("2_sugp2")
