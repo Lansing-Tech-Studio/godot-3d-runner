@@ -4,6 +4,7 @@ extends CharacterBody3D
 @export var reverse_speed := 4.5
 @export var sprint_max_speed := 48.0
 @export var speed_change_rate := 10.0
+@export var reverse_deceleration_rate := 20.0
 @export var turn_speed := 2.5
 @export var gravity_scale := 1.0
 
@@ -30,7 +31,11 @@ func _physics_process(delta: float) -> void:
 	elif backward_input > 0.0:
 		target_speed = -reverse_speed * backward_input
 
-	_forward_speed = move_toward(_forward_speed, target_speed, speed_change_rate * delta)
+	var change_rate := speed_change_rate
+	if (_forward_speed > 0.0 and target_speed < 0.0) or (_forward_speed < 0.0 and target_speed > 0.0):
+		change_rate = reverse_deceleration_rate
+
+	_forward_speed = move_toward(_forward_speed, target_speed, change_rate * delta)
 
 	var forward := -global_transform.basis.z
 	forward.y = 0.0
