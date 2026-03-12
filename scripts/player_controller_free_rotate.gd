@@ -15,12 +15,14 @@ var _forward_speed := 0.0
 var _gravity := 9.8
 var _camera_yaw := 0.0
 var _camera_pitch := -12.0
+var _hint_label: Label
 
 func _ready() -> void:
 	_gravity = float(ProjectSettings.get_setting("physics/3d/default_gravity", 9.8))
 	_ensure_collision_shape()
 	_ensure_visual()
 	_ensure_camera_rig()
+	_ensure_hint_overlay()
 	_input_capture(true)
 
 func _exit_tree() -> void:
@@ -76,6 +78,7 @@ func _physics_process(delta: float) -> void:
 
 func _input_capture(captured: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if captured else Input.MOUSE_MODE_VISIBLE
+	_update_hint_text()
 
 func _ensure_collision_shape() -> void:
 	if has_node("CollisionShape3D"):
@@ -154,3 +157,34 @@ func _apply_camera_rotation() -> void:
 
 	yaw_node.rotation_degrees.y = _camera_yaw
 	pitch_node.rotation_degrees.x = _camera_pitch
+
+func _ensure_hint_overlay() -> void:
+	var hud := get_node_or_null("HUD") as CanvasLayer
+	if hud == null:
+		hud = CanvasLayer.new()
+		hud.name = "HUD"
+		add_child(hud)
+
+	var label := hud.get_node_or_null("HintLabel") as Label
+	if label == null:
+		label = Label.new()
+		label.name = "HintLabel"
+		label.position = Vector2(16.0, 12.0)
+		label.add_theme_color_override("font_color", Color(0.92, 0.94, 0.98, 1.0))
+		label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.65))
+		label.add_theme_constant_override("shadow_offset_x", 1)
+		label.add_theme_constant_override("shadow_offset_y", 1)
+		label.position.y = 52.0
+		hud.add_child(label)
+
+	_hint_label = label
+	_update_hint_text()
+
+func _update_hint_text() -> void:
+	if _hint_label == null:
+		return
+
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		_hint_label.text = "Free Rotate: Mouse look active | Esc release mouse | M menu"
+	else:
+		_hint_label.text = "Free Rotate: Left click capture mouse | M menu"

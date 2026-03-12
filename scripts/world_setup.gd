@@ -7,6 +7,7 @@ const WALL_THICKNESS := 2.0
 const STRIPE_SIZE := 16.0
 const GRID_LINE_THICKNESS := 0.35
 const GRID_SPACING := 10.0
+const START_MENU_SCENE := "res://scenes/start_menu.tscn"
 # North, South, East, West
 const WALL_COLORS := [
 	Color(0.95, 0.18, 0.18, 1.0),
@@ -23,6 +24,34 @@ func _ready() -> void:
 	_ensure_floor_markers()
 	_ensure_walls()
 	_ensure_player_spawn()
+	_ensure_gameplay_hud()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("return_to_menu"):
+		_go_to_start_menu()
+
+func _go_to_start_menu() -> void:
+	var error := get_tree().change_scene_to_file(START_MENU_SCENE)
+	if error != OK:
+		push_error("Failed to load scene: %s (error %d)" % [START_MENU_SCENE, error])
+
+func _ensure_gameplay_hud() -> void:
+	var hud := get_node_or_null("GameplayHUD") as CanvasLayer
+	if hud == null:
+		hud = CanvasLayer.new()
+		hud.name = "GameplayHUD"
+		add_child(hud)
+
+	var menu_button := hud.get_node_or_null("MenuButton") as Button
+	if menu_button == null:
+		menu_button = Button.new()
+		menu_button.name = "MenuButton"
+		menu_button.text = "Menu (M)"
+		menu_button.position = Vector2(16.0, 16.0)
+		hud.add_child(menu_button)
+
+	if not menu_button.pressed.is_connected(_go_to_start_menu):
+		menu_button.pressed.connect(_go_to_start_menu)
 
 func _get_material(color: Color) -> StandardMaterial3D:
 	var key = color.to_html()

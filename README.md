@@ -144,7 +144,11 @@ On launch, the project now opens `res://scenes/start_menu.tscn`, which lets the 
   - `A` = turn left
   - `D` = turn right
   - `Shift` = sprint
+- Global gameplay:
+  - `M` = return to start menu
+  - `Menu (M)` button is always visible in the top-left during gameplay
 - Free rotate camera mode:
   - Move mouse (while captured) = rotate camera
   - Left click = capture mouse
   - `Esc` = release mouse
+  - On-screen hint appears below the menu button with current camera input state
