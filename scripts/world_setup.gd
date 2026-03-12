@@ -42,13 +42,53 @@ func _ensure_gameplay_hud() -> void:
 		hud.name = "GameplayHUD"
 		add_child(hud)
 
-	var menu_button := hud.get_node_or_null("MenuButton") as Button
+	var hud_panel := hud.get_node_or_null("HudPanel") as PanelContainer
+	if hud_panel == null:
+		hud_panel = PanelContainer.new()
+		hud_panel.name = "HudPanel"
+		hud_panel.position = Vector2(12.0, 12.0)
+
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(0.02, 0.03, 0.05, 0.62)
+		style.corner_radius_top_left = 8
+		style.corner_radius_top_right = 8
+		style.corner_radius_bottom_right = 8
+		style.corner_radius_bottom_left = 8
+		style.border_width_left = 1
+		style.border_width_top = 1
+		style.border_width_right = 1
+		style.border_width_bottom = 1
+		style.border_color = Color(1.0, 1.0, 1.0, 0.15)
+		hud_panel.add_theme_stylebox_override("panel", style)
+		hud.add_child(hud_panel)
+
+	var margin := hud_panel.get_node_or_null("Margin") as MarginContainer
+	if margin == null:
+		margin = MarginContainer.new()
+		margin.name = "Margin"
+		margin.add_theme_constant_override("margin_left", 10)
+		margin.add_theme_constant_override("margin_top", 8)
+		margin.add_theme_constant_override("margin_right", 10)
+		margin.add_theme_constant_override("margin_bottom", 8)
+		hud_panel.add_child(margin)
+
+	var hud_vbox := margin.get_node_or_null("HudVBox") as VBoxContainer
+	if hud_vbox == null:
+		hud_vbox = VBoxContainer.new()
+		hud_vbox.name = "HudVBox"
+		hud_vbox.add_theme_constant_override("separation", 6)
+		margin.add_child(hud_vbox)
+
+	var legacy_button := hud.get_node_or_null("MenuButton") as Button
+	if legacy_button != null:
+		legacy_button.queue_free()
+
+	var menu_button := hud_vbox.get_node_or_null("MenuButton") as Button
 	if menu_button == null:
 		menu_button = Button.new()
 		menu_button.name = "MenuButton"
 		menu_button.text = "Menu (M)"
-		menu_button.position = Vector2(16.0, 16.0)
-		hud.add_child(menu_button)
+		hud_vbox.add_child(menu_button)
 
 	if not menu_button.pressed.is_connected(_go_to_start_menu):
 		menu_button.pressed.connect(_go_to_start_menu)

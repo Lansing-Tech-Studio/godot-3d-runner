@@ -59,3 +59,7 @@ text = "Over-the-Shoulder"
 [node name="FreeRotateButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "Free Rotate"
+
+[node name="QuitButton" type="Button" parent="CenterContainer/PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "Quit"
