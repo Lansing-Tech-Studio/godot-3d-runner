@@ -7,15 +7,38 @@ extends CharacterBody3D
 @export var reverse_deceleration_rate := 60.0
 @export var turn_speed := 2.5
 @export var gravity_scale := 1.0
+@export var mouse_sensitivity := 0.15
+@export var min_pitch_degrees := -40.0
+@export var max_pitch_degrees := 65.0
 
 var _forward_speed := 0.0
 var _gravity := 9.8
+var _camera_yaw := 0.0
+var _camera_pitch := -12.0
 
 func _ready() -> void:
 	_gravity = float(ProjectSettings.get_setting("physics/3d/default_gravity", 9.8))
 	_ensure_collision_shape()
 	_ensure_visual()
-	_ensure_camera()
+	_ensure_camera_rig()
+	_input_capture(true)
+
+func _exit_tree() -> void:
+	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_input_capture(false)
+		return
+
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_input_capture(true)
+		return
+
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
+		_camera_yaw -= event.relative.x * mouse_sensitivity
+		_camera_pitch = clamp(_camera_pitch - event.relative.y * mouse_sensitivity, min_pitch_degrees, max_pitch_degrees)
 
 func _physics_process(delta: float) -> void:
 	var turn_input := Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
@@ -48,7 +71,11 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y = min(velocity.y, 0.0)
 
+	_apply_camera_rotation()
 	move_and_slide()
+
+func _input_capture(captured: bool) -> void:
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if captured else Input.MOUSE_MODE_VISIBLE
 
 func _ensure_collision_shape() -> void:
 	if has_node("CollisionShape3D"):
@@ -85,23 +112,45 @@ func _ensure_visual() -> void:
 
 	add_child(visual)
 
-func _ensure_camera() -> void:
-	var pivot: Node3D
-	if has_node("CameraPivot"):
-		pivot = get_node("CameraPivot") as Node3D
+func _ensure_camera_rig() -> void:
+	var rig: Node3D
+	if has_node("CameraRig"):
+		rig = get_node("CameraRig") as Node3D
 	else:
-		pivot = Node3D.new()
-		pivot.name = "CameraPivot"
-		pivot.position = Vector3(0.0, 1.6, 0.0)
-		pivot.rotation_degrees = Vector3(-18.0, 0.0, 0.0)
-		add_child(pivot)
+		rig = Node3D.new()
+		rig.name = "CameraRig"
+		rig.position = Vector3(0.0, 1.6, 0.0)
+		add_child(rig)
 
-	if pivot.has_node("Camera3D"):
+	var yaw_node: Node3D
+	if rig.has_node("Yaw"):
+		yaw_node = rig.get_node("Yaw") as Node3D
+	else:
+		yaw_node = Node3D.new()
+		yaw_node.name = "Yaw"
+		rig.add_child(yaw_node)
+
+	var pitch_node: Node3D
+	if yaw_node.has_node("Pitch"):
+		pitch_node = yaw_node.get_node("Pitch") as Node3D
+	else:
+		pitch_node = Node3D.new()
+		pitch_node.name = "Pitch"
+		yaw_node.add_child(pitch_node)
+
+	if not pitch_node.has_node("Camera3D"):
+		var camera := Camera3D.new()
+		camera.name = "Camera3D"
+		camera.position = Vector3(0.0, 2.2, 6.0)
+		camera.current = true
+		camera.fov = 75.0
+		pitch_node.add_child(camera)
+
+func _apply_camera_rotation() -> void:
+	var yaw_node := get_node_or_null("CameraRig/Yaw") as Node3D
+	var pitch_node := get_node_or_null("CameraRig/Yaw/Pitch") as Node3D
+	if yaw_node == null or pitch_node == null:
 		return
 
-	var camera := Camera3D.new()
-	camera.name = "Camera3D"
-	camera.position = Vector3(1.0, 2.6, 4.8)
-	camera.current = true
-	camera.fov = 75.0
-	pivot.add_child(camera)
+	yaw_node.rotation_degrees.y = _camera_yaw
+	pitch_node.rotation_degrees.x = _camera_pitch

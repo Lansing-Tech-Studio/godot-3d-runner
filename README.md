@@ -126,3 +126,25 @@ If MCP is already running and you changed env vars/port, reload the VS Code wind
 6. Open the same folder in VS Code and start using MCP in Copilot chat.
 
 Tip: Keep a simple port map (project -> port) to avoid collisions when running multiple projects.
+
+## Gameplay Modes
+
+On launch, the project now opens `res://scenes/start_menu.tscn`, which lets the player choose one of two camera perspectives:
+
+- Over-the-Shoulder (`res://scenes/main.tscn`)
+  - Player-aligned third-person chase camera (locked behind/above the character).
+- Free Rotate (`res://scenes/main_free_rotate.tscn`)
+  - Third-person camera that orbits independently from player facing direction.
+
+## Controls
+
+- Movement:
+  - `W` = move forward
+  - `S` = move backward
+  - `A` = turn left
+  - `D` = turn right
+  - `Shift` = sprint
+- Free rotate camera mode:
+  - Move mouse (while captured) = rotate camera
+  - Left click = capture mouse
+  - `Esc` = release mouse
